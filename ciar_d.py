@@ -4,6 +4,7 @@ import ciar
 
 import sys,os,importlib,inspect
 import argparse
+import redis
 
 
 # creating the parser
@@ -12,11 +13,15 @@ parser.add_argument('python_module',metavar='file')
 
 args = parser.parse_args()
 
-filename=args.python_module
-if os.path.isfile(filename):
-    sys.path.append(os.path.dirname(filename))
-    if filename.endswith(".py"):
-        mod=importlib.import_module(filename[:-3])
+
+file_name=args.python_module
+
+
+if os.path.isfile(file_name):
+    sys.path.append(os.path.dirname(file_name))
+    if file_name.endswith(".py"):
+        module_name = file_name[:-3]
+        mod = importlib.import_module(module_name)
     else:
         print("Error : expecting a file ending in .py")
         sys.exit(0)
@@ -27,7 +32,7 @@ else:
 
 
 # we now extract the class
-classes = [i for i in dir(mod) if (not i.startswith("__")) and i != "ciar" ]
+classes = [i for i in dir(mod) if i.startswith("cmd")] #(not i.startswith("__")) and i != "ciar" ]
 if len(classes) > 1:
     print("we can only have one class in the file found %d : (%s)" % (len(classes),", ".join(classes)))
     sys.exit(0)
@@ -35,7 +40,7 @@ if len(classes) > 1:
 # and we get one instance
 cla = classes[0]
 
-inst = mod.__dict__[cla]
+inst = mod.__dict__[cla]()
 
 print("inspecting class:")
 for m in inspect.getmembers(inst):
@@ -45,24 +50,27 @@ for m in inspect.getmembers(inst):
 
 
 
-all_instance=[]
-for i in range(2):
-    # we create an instance
-    inst = mod.__dict__['A']()
-    all_instance.append(inst)
-    print("before ",inst.a)
-    
-    # we get the method
-    met = getattr(inst,"set_a")
-    
-    # a list of args
-    list_arg = [3+i]
-    
-    # calling the method with args
-    met(*list_arg)
 
-    print("after ",inst.a)
 
-for i in range(2):
-    print(i," value",all_instance[i].a)
-    
+
+def treat_pubsub(channel):
+    pass
+
+
+
+# init readis listener
+r=redis.StrictRedis()
+
+
+
+l=r.listener(module_name)
+while True:
+    # wait for something to happen
+
+    kw,arguments = treat_pubsub(l)
+    # if we have a init
+    if kw == "init":
+        # we have to instantiate the class
+        pass
+        # perform the init function with parameters
+

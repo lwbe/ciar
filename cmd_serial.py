@@ -1,19 +1,31 @@
 import ciar
+import serial
 
-class serial(ciar.ciar_module):
-    a = 2
 
-    def init(self,serial_id):
+class cmd_serial(ciar.ciar_module):
+    confstring_def = """cmd_serial(
+                 serialnum|vendor,product|device,
+                 baudrate="9600",
+                 bytesize=serial.EIGHTBITS,
+                 stopbits=serial.STOPBITS_ONE,
+                 parity=serial.PARITY_NONE,
+                 flow,
+                 timeout)
+    """
+
+    def init(self, device_id, confstring):
+        # treat the confstring to store information
         print("A.init")
 
-    def config(self,serial_id):
+    def config(self):
         pass
 
-    def inval(self,serial_id):
+    def inval(self):
         pass
 
-    def deinit(self,serial_id):
+    def deinit(self):
         pass
 
-    def set_a(self,serial_id,v):
-        self.a = v
+    def set_a(self, v):
+        pass
+
